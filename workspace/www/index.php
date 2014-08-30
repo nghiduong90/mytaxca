@@ -72,8 +72,8 @@ if (isset($_POST['email'])) {
                     <h1 class="login_header">Login</h1>
             
                     <form class="login_form" name="login_form" method="post" action="index.php">
-                            <input type="text" placeholder="Email" name='email'/>
-                            <input type="password" placeholder="Password" name='password'/>
+                            <input type="text" placeholder="Email" name='email' required/>
+                            <input type="password" placeholder="Password" name='password' required/>
                             <input type="submit" value="Login" class="login_button" />
                     </form>
                   
