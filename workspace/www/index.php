@@ -1,7 +1,7 @@
 <?php
 session_start();
  
-  $wrong_password=null;
+  $wrong_password=false;
 if (isset($_POST['email'])) {
   
 	// Set the posted data from the form into local variables
@@ -39,11 +39,11 @@ if (isset($_POST['email'])) {
 		$_SESSION['name'] = $row[0][1];
     $_SESSION['password'] = $row[0][2];
     $_SESSION['level'] = $row[0][3];
-    $wrong_password=false;
+    
 		// Now direct to users feed
 		header("Location: dash.php");
 	} else { 
-		$wrong_password=true;
+    $wrong_password = true;
 	}
 	
 }

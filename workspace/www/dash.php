@@ -196,7 +196,7 @@ if (isset($_SESSION['email'])) {
                         </li>
                       <?php if($level==3) {?>
                         <li>
-                            <a href="#"> Add New Employee</a>
+                            <a href="new_user.php"> Add New Employee</a>
                         </li>                          
                         <?php } ?>                      
                     </ul>
