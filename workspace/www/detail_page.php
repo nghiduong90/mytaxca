@@ -7,9 +7,15 @@ if (isset($_SESSION['email'])) {
 	$email = $_SESSION['email'];
 	$name = $_SESSION['name'];
   $level = $_SESSION['level'];
+  
+  echo $_SESSION['id'];
+  unset($_SESSION['id']);
+  
+  
 } else {
 	header("Location: index.php");
 }
+
 // receive request
 if($_SERVER["REQUEST_METHOD"] == "POST" ){
   
@@ -190,7 +196,7 @@ f
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            Create a New Task
+                            Task Detail and Modify
                         </h1>
                         <ol class="breadcrumb">
                             <li>
@@ -258,8 +264,10 @@ f
                     <textarea name="memo" rows="4" cols="50" class="form-control" id="memo"></textarea>
                 </div>
 
-                  <button type="submit" class="btn btn-default">Submit</button>
+                  <button type="submit" class="btn btn-default">Modify</button>
                 </form>
+            
+              <a href="dash.php"><button class="btn btn-default">Back</button></a>      
 
             </div>
             <!-- /.container-fluid -->

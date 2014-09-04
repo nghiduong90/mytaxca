@@ -1,3 +1,16 @@
+<?php
+session_start();
+ 
+if (isset($_SESSION['email'])) {
+	// Put stored session variables into local PHP variable
+	$email = $_SESSION['email'];
+	$name = $_SESSION['name'];
+  $level = $_SESSION['level'];
+  $action = $_SESSION['action'];
+} else {
+	header("Location: index.php");
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -68,13 +81,13 @@
             <ul class="nav navbar-right top-nav">
 
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> <?php echo $name ?> <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="#"> Edit Account</a>
                         </li>                      
                         <li>
-                            <a href="#"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                            <a href="logout.php"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
                         </li>
                     </ul>
                 </li>
@@ -122,7 +135,7 @@
                     <div class="col-lg-12">
                         <ol class="breadcrumb">
                             <li>
-                                <i class="fa fa-dashboard"></i> Great! Task added! <img class=icons src="/assets/images/check.png" width="16" height="16">
+                                <i class="fa fa-dashboard"></i> Great! <?php if($action=='add_task') { ?> Task <?php } else if($action=='add_user') { ?> Account <?php } ?> added! <img class=icons src="/assets/images/check.png" width="16" height="16">
                             </li>
                         </ol>
                     </div>

@@ -44,6 +44,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST" ){
       try{
       $result = $db->prepare("INSERT INTO users (email,name, password, level) VALUES('$entered_email','$entered_name', '$entered_password', '$entered_level');");
       $result->execute();
+      
+        // this sesson tells thanks page what to show
+      $_SESSION['action'] = 'add_user';
+        
       header("Location: thanks.php");
     } catch (Exception $e){
       echo "cannot insert data to server!";

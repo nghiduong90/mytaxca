@@ -22,7 +22,6 @@ if (isset($_SESSION['email'])) {
 
 // get data for the boss
 // also count tasks
-
   if($level == 3)
   {
       try{
@@ -32,16 +31,19 @@ if (isset($_SESSION['email'])) {
         
         $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'in_process' ORDER BY deadline ASC");
         $task_array = $result->fetchAll();
-        $yellow_light = sizeof($task_array);        
+        $yellow_light = sizeof($task_array);
         
         $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'done' ORDER BY deadline ASC");   
         $task_array = $result->fetchAll();
-        $green_light = sizeof($task_array);        
+        $green_light = sizeof($task_array); 
         
         $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) ORDER BY deadline ASC");
         $task_array = $result->fetchAll();
         $total = sizeof($task_array);
-        //var_dump($row);  
+        
+// get tasks which passed deadline
+        $result = $db->query("SELECT * FROM tasks WHERE DATEDIFF(deadline,NOW()) <= 0 ORDER BY deadline ASC");
+        $late_tasks = $result->fetchAll();
         
       } catch (Exception $e){
         echo "cannot get data from server!";
@@ -69,6 +71,11 @@ if (isset($_SESSION['email'])) {
         $task_array = $result->fetchAll();
         $total = sizeof($task_array);
         //var_dump($row);  
+// passed tasks for employees
+        
+        $result = $db->query("SELECT * FROM tasks WHERE assign_to ='$name' AND DATEDIFF(deadline,NOW()) <= 0 ORDER BY deadline ASC");
+        $late_tasks = $result->fetchAll();        
+        
       } catch (Exception $e){
         echo "cannot get data from server!";
         exit;
@@ -272,10 +279,45 @@ if (isset($_SESSION['email'])) {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                  
+                                <?php 
+                                foreach ($late_tasks as $late_task) { ?>
+                                  
+                                <tr class = "late_tasks">
+                                <td class="td1"><a onclick=" <?php  $_SESSION['id']=$late_task["id"]; ?> " href='detail_page.php' ><img class=icons     src="/assets/images/file.png"></a><?php echo $late_task["task_name"]; ?></td>
+                                <td class="td1"><?php echo $late_task["client_name"]; ?></td>
+                                <td class="td1"><?php echo $late_task["company_name"]; ?></td>
+                                <td class="td1"><?php echo $late_task["assign_to"]; ?></td>
+                                <td class="td4"><?php echo $late_task["deadline"]; ?> (Passed)</td>  
+                                <td class="td5"><?php 
+                                if($late_task["status"]=="done"){ ?>
+                                    <img class=icons src="/assets/images/check.png" width="16" height="16">
+                                <?php
+                                    echo "Done";
+                                }
+                                elseif($late_task["status"]=="in_process")
+                                { ?>
+                                    <img class=icons src="/assets/images/yellowball.png">
+                                <?php
+                                    echo "In Process";
+                                }
+                                else
+                                { ?>
+                                    <img class=icons src="/assets/images/redball.png">
+                                <?php
+                                    echo "Not Start";
+                                }
+                                ?></td>
+                            </tr>
+                                  
+                            <?php } ?>  
+                                  
+<!--=========================Passed tasks ends=====================================-->                                  
+                                  
                             <?php
                             foreach ($task_array as $task) { ?>
                             <tr class = tr1>
-                            <td class="td1"><a href="#"><img class=icons src="/assets/images/file.png"></a><?php echo $task["task_name"]; ?></td>
+                            <td class="td1"><a onclick=" <?php  $_SESSION['id']=$task["id"]; ?> " href="detail_page.php"><img class=icons src="/assets/images/file.png"></a><?php echo $task["task_name"]; ?></td>
                             <td class="td1"><?php echo $task["client_name"]; ?></td>
                             <td class="td1"><?php echo $task["company_name"]; ?></td>
                             <td class="td1"><?php echo $task["assign_to"]; ?></td>
