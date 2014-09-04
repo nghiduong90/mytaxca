@@ -1,7 +1,7 @@
 <?php
 
 session_start();
- 
+
 if (isset($_SESSION['email'])) {
 	// Put stored session variables into local PHP variable
 	$email = $_SESSION['email'];
@@ -10,17 +10,71 @@ if (isset($_SESSION['email'])) {
 } else {
 	header("Location: index.php");
 }
+// receive request
+if($_SERVER["REQUEST_METHOD"] == "POST" ){
+  
+    $entered_task_name = $_POST["task_name"];
+    $entered_client_name = $_POST["client_name"];
+    $entered_company_name = $_POST["company_name"];
+    $entered_client_address = $_POST["client_address"];
+    $entered_client_email = $_POST["client_email"];
+    $entered_client_phone = $_POST["client_phone"];
+    $entered_job_description = $_POST["job_description"];
+    if($level == 3){
+      $entered_assign_to = $_POST["assign_to"];
+    }
+    else
+    {
+      $entered_assign_to="";
+    }
+    $entered_deadline = $_POST["deadline"];
+    $entered_memo = $_POST["memo"];
+    $entered_status = "not_start";
+  
+  // try to connect server
+    try{
+    $db = new PDO('mysql:host=localhost;dbname=mytaxca;charset=utf8','root', '123456');
+    $db->exec("SET NAMES 'utf8'");
+  } catch (Exception $e){
+    echo "fail to connect to server.";
+      exit;
+  }  
+  
+  // put value into db
+     try{
+      $result = $db->prepare("INSERT INTO tasks (task_name, client_name, company_name, client_address, client_email, client_telephone, job_description, assign_to, deadline, memo, status) VALUES('$entered_task_name','$entered_client_name', '$entered_company_name', '$entered_client_address', '$entered_client_email', '$entered_client_phone', '$entered_job_description', '$entered_assign_to', '$entered_deadline', '$entered_memo', '$entered_status');");
+      $result->execute();
+      header("Location: thanks.php");
+    } catch (Exception $e){
+      echo "cannot insert data to server!";
+      exit;
+    }  
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-        $task_name = $_POST["task_name"];
-        $customer_name = $_POST["customer_name"];
-        $assign_to = $_POST["assign_to"];
-        $deadline = $_POST["deadline"];
-        $memo = $_POST["memo"];
 
-
-        header("Location: thanks.php");
+    header("Location: thanks.php");  
 }
+// eding receiving request
+
+// connect to db
+try{
+    $db = new PDO('mysql:host=localhost;dbname=mytaxca;charset=utf8','root', '123456');
+    $db->exec("SET NAMES 'utf8'");
+  } catch (Exception $e){
+    echo "fail to connect to server.";
+      exit;
+  }
+
+// fetch data
+  try{
+    $result = $db->query("SELECT name FROM users;");
+    $row = $result->fetchAll();
+    //var_dump($row);  
+  } catch (Exception $e){
+    echo "cannot get all users from server!";
+    exit;
+  }
+var_dump($row);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -147,18 +201,48 @@ f
                 <!-- /.row -->
                 <form role="form" method="post" action="tables.php" onsubmit="return validateForm();">
                   <div class="form-group">
-                    <label for="task_name">Task Name</label>
-                    <input name="task_name" type="text" class="form-control" id="task_name" placeholder="Enter Task Name">
+                    <label for="task_name">Task Name <span class="red-star">★</span></label> 
+                    <input required name="task_name" type="text" class="form-control" id="task_name" placeholder="Enter Task Name">
                   </div>
                   <div class="form-group">
-                    <label for="customer_name">Customer Name</label>
-                    <input name="customer_name" type="text" class="form-control" id="customer_name" placeholder="Enter Customer's Name (First Last)">
+                    <label for="client_name">Client Name <span class="red-star">★</span></label>
+                    <input required name="client_name" type="text" class="form-control" id="client_name" placeholder="Enter Client's Name (First Last)">
                 </div>
                   
                   <div class="form-group">
-                    <label for="assign_to">Assign to</label>
-                    <input name="assign_to" type="text" class="form-control" id="assign_to" placeholder="person who will be responsible for the task">
+                    <label for="company_name">Company Name</label>
+                    <input required name="company_name" type="text" class="form-control" id="company_name" placeholder="Enter Company Name">
+                </div> 
+                  
+                  <div class="form-group">
+                    <label for="client_address">Client's Address</label>
+                    <input name="client_address" type="text" class="form-control" id="client_address" placeholder="Enter Client's Address">
+                </div>  
+                  
+                  <div class="form-group">
+                    <label for="client_email">Client's Email</label>
+                    <input name="client_email" type="text" class="form-control" id="client_email" placeholder="Enter Client's Email">
                 </div>
+                  
+                  <div class="form-group">
+                    <label for="client_phone">Client's Phone Number</label>
+                    <input name="client_phone" type="text" class="form-control" id="client_phone" placeholder="Enter Client's Phone Number">
+                </div> 
+                  
+                  <div class="form-group">
+                    <label for="job_description">Job Description</label>
+                    <input name="job_description" type="text" class="form-control wide-window" id="job_description" placeholder="Job Description">
+                </div>                   
+                  
+                    <div class="form-group" <?php if($level != 3) { ?> hidden <?php } ?> >
+                      <label for="assign_to">Assign to <span class="red-star">★</span></label>   
+                      <select name="assign_to" class="form-control" id="assign_to" placeholder="person who will be responsible for the task">
+                        <?php
+                              foreach ($row as $person) { ?>
+                        <option value= <?php echo $person["name"]; ?> > <?php echo $person["name"]; ?> </option>
+                        <?php } ?>
+                      </select>                    
+                  </div>
 
                 <div class="form-group">
                     <label for="deadline">Deadline</label>
@@ -167,7 +251,7 @@ f
 
                 <div class="form-group">
                     <label for="memo">Memo</label>
-                    <input name="memo" type="message" class="form-control" id="memo" placeholder="Extra information about this task">
+                    <textarea name="memo" rows="4" cols="50" class="form-control" id="memo"></textarea>
                 </div>
 
                   <button type="submit" class="btn btn-default">Submit</button>
