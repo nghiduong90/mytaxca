@@ -9,8 +9,71 @@ if (isset($_SESSION['email'])) {
 } else {
 	header("Location: index.php");
 }
-    
-    $task_array = array();          
+
+
+// try to connect to db
+  try{
+    $db = new PDO('mysql:host=localhost;dbname=mytaxca;charset=utf8','root', '123456');
+    $db->exec("SET NAMES 'utf8'");
+  } catch (Exception $e){
+    echo "fail to connect to server.";
+      exit;
+  }
+
+// get data for the boss
+// also count tasks
+
+  if($level == 3)
+  {
+      try{
+        $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'not_start' ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $red_light = sizeof($task_array);
+        
+        $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'in_process' ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $yellow_light = sizeof($task_array);        
+        
+        $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'done' ORDER BY deadline ASC");   
+        $task_array = $result->fetchAll();
+        $green_light = sizeof($task_array);        
+        
+        $result = $db->query("SELECT * FROM tasks WHERE deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $total = sizeof($task_array);
+        //var_dump($row);  
+        
+      } catch (Exception $e){
+        echo "cannot get data from server!";
+        exit;
+      }    
+  }
+// get data for employees
+// also count tasks
+  else
+  {
+      try{
+        $result = $db->query("SELECT * FROM tasks WHERE assign_to ='$name' AND deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'not_start' ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $red_light = sizeof($task_array);
+
+        $result = $db->query("SELECT * FROM tasks WHERE assign_to ='$name' AND deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'in_process' ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $yellow_light = sizeof($task_array);
+        
+        $result = $db->query("SELECT * FROM tasks WHERE assign_to ='$name' AND deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'done' ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $green_light = sizeof($task_array);    
+        
+        $result = $db->query("SELECT * FROM tasks WHERE assign_to ='$name' AND deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) ORDER BY deadline ASC");
+        $task_array = $result->fetchAll();
+        $total = sizeof($task_array);
+        //var_dump($row);  
+      } catch (Exception $e){
+        echo "cannot get data from server!";
+        exit;
+      }    
+  }        
 
 ?>
 <!DOCTYPE html>
@@ -127,7 +190,7 @@ if (isset($_SESSION['email'])) {
                 </div>
 
                 <!-- /.row -->
-
+                <h4> For The Past 30 Days:  </h4>
                 <div class="row">
                     <div class="col-lg-3 col-md-6">
                         <div class="panel panel-primary">
@@ -137,8 +200,8 @@ if (isset($_SESSION['email'])) {
                                         <i class="fa fa-comments fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">25</div>
-                                        <div>Total Tasks this week!</div>
+                                        <div class="huge"><?php echo $total ?></div>
+                                        <div>Total Tasks</div>
                                     </div>
                                 </div>
                             </div>
@@ -152,7 +215,7 @@ if (isset($_SESSION['email'])) {
                                         <i class="fa fa-tasks fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">12</div>
+                                        <div class="huge"> <?php echo $green_light ?> </div>
                                         <div>Tasks Done!</div>
                                     </div>
                                 </div>
@@ -167,7 +230,7 @@ if (isset($_SESSION['email'])) {
                                         <i class="fa fa-tasks fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">124</div>
+                                        <div class="huge"> <?php echo $yellow_light ?> </div>
                                         <div>Tasks in Process!</div>
                                     </div>
                                 </div>
@@ -182,7 +245,7 @@ if (isset($_SESSION['email'])) {
                                         <i class="fa fa-tasks fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">13</div>
+                                        <div class="huge"> <?php echo $red_light ?> </div>
                                         <div>Tasks Not Start!</div>
                                     </div>
                                 </div>
@@ -202,6 +265,7 @@ if (isset($_SESSION['email'])) {
                                     <tr>
                                         <th>Task Name</th>
                                         <th>Customer Name</th>
+                                        <th>Company Name</th>
                                         <th>Assign to</th>
                                         <th>Deadline</th>
                                         <th>Status</th>
@@ -212,16 +276,17 @@ if (isset($_SESSION['email'])) {
                             foreach ($task_array as $task) { ?>
                             <tr class = tr1>
                             <td class="td1"><a href="#"><img class=icons src="/assets/images/file.png"></a><?php echo $task["task_name"]; ?></td>
-                            <td class="td2"><?php echo $task["customer_name"]; ?></td>
-                            <td class="td3"><?php echo $task["assign_to"]; ?></td>
+                            <td class="td1"><?php echo $task["client_name"]; ?></td>
+                            <td class="td1"><?php echo $task["company_name"]; ?></td>
+                            <td class="td1"><?php echo $task["assign_to"]; ?></td>
                             <td class="td4"><?php echo $task["deadline"]; ?></td>
                             <td class="td5"><?php 
-                            if($task["status"]==1){ ?>
+                            if($task["status"]=="done"){ ?>
                                 <img class=icons src="/assets/images/check.png" width="16" height="16">
                             <?php
                                 echo "Done";
                             }
-                            elseif($task["status"]==2)
+                            elseif($task["status"]=="in_process")
                             { ?>
                                 <img class=icons src="/assets/images/yellowball.png">
                             <?php
